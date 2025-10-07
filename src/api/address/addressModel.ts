@@ -35,3 +35,9 @@ export const ValidateAddressRequestSchema = z.object({
 	}),
 });
 export type ValidateAddressRequest = z.infer<typeof ValidateAddressRequestSchema>;
+
+export const ErrorResponseSchema = z.object({
+	error: z.string(),
+	details: z.array(z.string()).optional(),
+});
+export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;

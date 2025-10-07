@@ -72,9 +72,14 @@ export class SmartyService {
 	}
 
 	async validateAddress(address: string): Promise<SmartyServiceResult> {
+		if (this.authId.startsWith("test-") || this.authToken.startsWith("test-")) {
+			throw new Error(
+				"Smarty API credentials not configured properly. Please set SMARTY_AUTH_ID and SMARTY_AUTH_TOKEN environment variables.",
+			);
+		}
+
 		try {
 			const url = new URL(this.apiUrl);
-      console.log('==== CHECK TOKENS', this.authId, this.authToken)
 			url.searchParams.append("auth-id", this.authId);
 			url.searchParams.append("auth-token", this.authToken);
 			url.searchParams.append("street", address);
@@ -165,7 +170,6 @@ export class SmartyService {
 		].filter(Boolean);
 
 		const street = streetParts.length > 0 ? streetParts.join(" ") : undefined;
-		const fullStreet = components.primary_number && street ? `${components.primary_number} ${street}` : street;
 
 		const zip =
 			components.zipcode && components.plus4_code
@@ -174,7 +178,7 @@ export class SmartyService {
 
 		return {
 			number: components.primary_number,
-			street: fullStreet,
+			street,
 			city: components.city_name,
 			state: components.state_abbreviation,
 			zip,

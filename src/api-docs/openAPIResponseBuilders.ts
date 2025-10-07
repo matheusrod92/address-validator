@@ -16,6 +16,19 @@ export function createApiResponse(schema: z.ZodTypeAny, description: string, sta
 	};
 }
 
+export function createDirectApiResponse(schema: z.ZodTypeAny, description: string, statusCode = StatusCodes.OK) {
+	return {
+		[statusCode]: {
+			description,
+			content: {
+				"application/json": {
+					schema,
+				},
+			},
+		},
+	};
+}
+
 // Use if you want multiple responses for a single endpoint
 
 // import { ResponseConfig } from '@asteasolutions/zod-to-openapi';

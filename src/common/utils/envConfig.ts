@@ -16,11 +16,32 @@ const envSchema = z.object({
 
 	COMMON_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(1000),
 
-	GOOGLE_API_KEY: z.string().min(1).default("test-google-key"),
+	GOOGLE_API_KEY: z
+		.string()
+		.min(1)
+		.default("test-google-key")
+		.refine(
+			(val) => process.env.NODE_ENV === "test" || !val.startsWith("test-"),
+			"GOOGLE_API_KEY: Real API key required in production (test key detected)",
+		),
 
-	SMARTY_AUTH_ID: z.string().min(1).default("test-smarty-id"),
+	SMARTY_AUTH_ID: z
+		.string()
+		.min(1)
+		.default("test-smarty-id")
+		.refine(
+			(val) => process.env.NODE_ENV === "test" || !val.startsWith("test-"),
+			"SMARTY_AUTH_ID: Real auth ID required in production (test value detected)",
+		),
 
-	SMARTY_AUTH_TOKEN: z.string().min(1).default("test-smarty-token"),
+	SMARTY_AUTH_TOKEN: z
+		.string()
+		.min(1)
+		.default("test-smarty-token")
+		.refine(
+			(val) => process.env.NODE_ENV === "test" || !val.startsWith("test-"),
+			"SMARTY_AUTH_TOKEN: Real auth token required in production (test value detected)",
+		),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

@@ -58,9 +58,9 @@ describe("AddressService", () => {
 			// Assert
 			expect(googleService.validateAddress).toHaveBeenCalledWith("1600 Amphitheatre Parkway, Mountain View, CA");
 			expect(smartyService.validateAddress).not.toHaveBeenCalled();
-			expect(result.success).toBe(true);
-			expect(result.responseObject?.provider).toBe("google");
-			expect(result.responseObject?.status).toBe("VALID");
+			expect(result.provider).toBe("google");
+			expect(result.status).toBe("VALID");
+			expect(result.input).toBe("1600 Amphitheatre Parkway, Mountain View, CA");
 		});
 
 		it("uses Smarty when provider is 'smarty'", async () => {
@@ -73,9 +73,9 @@ describe("AddressService", () => {
 			// Assert
 			expect(smartyService.validateAddress).toHaveBeenCalledWith("1600 Amphitheatre Pkwy");
 			expect(googleService.validateAddress).not.toHaveBeenCalled();
-			expect(result.success).toBe(true);
-			expect(result.responseObject?.provider).toBe("smarty");
-			expect(result.responseObject?.status).toBe("VALID");
+			expect(result.provider).toBe("smarty");
+			expect(result.status).toBe("VALID");
+			expect(result.input).toBe("1600 Amphitheatre Pkwy");
 		});
 	});
 
@@ -90,8 +90,8 @@ describe("AddressService", () => {
 			// Assert
 			expect(googleService.validateAddress).toHaveBeenCalledWith("1600 Amphitheatre Parkway");
 			expect(smartyService.validateAddress).not.toHaveBeenCalled();
-			expect(result.success).toBe(true);
-			expect(result.responseObject?.provider).toBe("google");
+			expect(result.provider).toBe("google");
+			expect(result.status).toBe("VALID");
 		});
 
 		it("falls back to Smarty when Google returns UNVERIFIABLE", async () => {
@@ -109,9 +109,8 @@ describe("AddressService", () => {
 			// Assert
 			expect(googleService.validateAddress).toHaveBeenCalledWith("123 Main St");
 			expect(smartyService.validateAddress).toHaveBeenCalledWith("123 Main St");
-			expect(result.success).toBe(true);
-			expect(result.responseObject?.provider).toBe("smarty");
-			expect(result.responseObject?.status).toBe("VALID");
+			expect(result.provider).toBe("smarty");
+			expect(result.status).toBe("VALID");
 		});
 
 		it("returns Google UNVERIFIABLE result if Smarty fallback also fails", async () => {
@@ -129,9 +128,8 @@ describe("AddressService", () => {
 			// Assert
 			expect(googleService.validateAddress).toHaveBeenCalled();
 			expect(smartyService.validateAddress).toHaveBeenCalled();
-			expect(result.success).toBe(true);
-			expect(result.responseObject?.provider).toBe("google");
-			expect(result.responseObject?.status).toBe("UNVERIFIABLE");
+			expect(result.provider).toBe("google");
+			expect(result.status).toBe("UNVERIFIABLE");
 		});
 
 		it("falls back to Smarty when Google throws an error", async () => {
@@ -145,22 +143,19 @@ describe("AddressService", () => {
 			// Assert
 			expect(googleService.validateAddress).toHaveBeenCalledWith("123 Main St");
 			expect(smartyService.validateAddress).toHaveBeenCalledWith("123 Main St");
-			expect(result.success).toBe(true);
-			expect(result.responseObject?.provider).toBe("smarty");
+			expect(result.provider).toBe("smarty");
+			expect(result.status).toBe("VALID");
 		});
 
-		it("returns error when both providers fail", async () => {
+		it("throws error when both providers fail", async () => {
 			// Arrange
 			(googleService.validateAddress as Mock).mockRejectedValue(new Error("Google failed"));
 			(smartyService.validateAddress as Mock).mockRejectedValue(new Error("Smarty failed"));
 
-			// Act
-			const result = await addressServiceInstance.validateAddress("bad address");
-
-			// Assert
-			expect(result.success).toBe(false);
-			expect(result.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
-			expect(result.message).toBe("An error occurred while validating the address.");
+			// Act & Assert
+			await expect(addressServiceInstance.validateAddress("bad address")).rejects.toThrow(
+				"Both providers failed - Google: Google failed, Smarty: Smarty failed",
+			);
 		});
 	});
 
@@ -170,7 +165,7 @@ describe("AddressService", () => {
 			const correctedResult: GoogleServiceResult = {
 				standardized: {
 					number: "1600",
-					street: "1600 Amphitheatre Parkway",
+					street: "Amphitheatre Parkway",
 					city: "Mountain View",
 					state: "CA",
 					zip: "94043",
@@ -185,9 +180,7 @@ describe("AddressService", () => {
 			const result = await addressServiceInstance.validateAddress("1600 Amphitheatre Pkwy", "google");
 
 			// Assert
-			expect(result.success).toBe(true);
-			expect(result.statusCode).toBe(StatusCodes.OK);
-			expect(result.responseObject).toMatchObject({
+			expect(result).toMatchObject({
 				input: "1600 Amphitheatre Pkwy",
 				standardized: correctedResult.standardized,
 				status: "CORRECTED",

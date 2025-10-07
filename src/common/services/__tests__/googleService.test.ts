@@ -70,7 +70,8 @@ describe("GoogleService", () => {
 			const result = await googleService.validateAddress("1600 Amphitheatre Parkway, Mountain View, CA 94043");
 
 			expect(result.status).toBe("VALID");
-			expect(result.standardized.street).toBe("1600 Amphitheatre Parkway");
+			expect(result.standardized.number).toBe("1600");
+			expect(result.standardized.street).toBe("Amphitheatre Parkway"); // Street name only, no number
 			expect(result.standardized.city).toBe("Mountain View");
 			expect(result.standardized.state).toBe("CA");
 			expect(result.standardized.zip).toBe("94043");

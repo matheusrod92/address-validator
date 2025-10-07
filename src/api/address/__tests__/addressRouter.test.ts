@@ -2,8 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import request from "supertest";
 import type { Mock } from "vitest";
 
-import type { AddressValidationResponse } from "@/api/address/addressModel";
-import type { ServiceResponse } from "@/common/models/serviceResponse";
+import type { AddressValidationResponse, ErrorResponse } from "@/api/address/addressModel";
 import type { GoogleServiceResult } from "@/common/services/googleService";
 import { googleService } from "@/common/services/googleService";
 import type { SmartyServiceResult } from "@/common/services/smartyService";
@@ -55,13 +54,11 @@ describe("Address Validation API Endpoints", () => {
 				provider: "google",
 			});
 
-			const responseBody: ServiceResponse<AddressValidationResponse> = response.body;
+			const responseBody: AddressValidationResponse = response.body;
 
 			// Assert
 			expect(response.statusCode).toEqual(StatusCodes.OK);
-			expect(responseBody.success).toBeTruthy();
-			expect(responseBody.message).toContain("Address validated successfully");
-			expect(responseBody.responseObject).toMatchObject({
+			expect(responseBody).toMatchObject({
 				input: "1600 Amphitheatre Parkway, Mountain View, CA 94043",
 				standardized: mockGoogleResult.standardized,
 				status: "VALID",
@@ -79,13 +76,12 @@ describe("Address Validation API Endpoints", () => {
 				provider: "smarty",
 			});
 
-			const responseBody: ServiceResponse<AddressValidationResponse> = response.body;
+			const responseBody: AddressValidationResponse = response.body;
 
 			// Assert
 			expect(response.statusCode).toEqual(StatusCodes.OK);
-			expect(responseBody.success).toBeTruthy();
-			expect(responseBody.responseObject?.provider).toBe("smarty");
-			expect(responseBody.responseObject?.status).toBe("VALID");
+			expect(responseBody.provider).toBe("smarty");
+			expect(responseBody.status).toBe("VALID");
 		});
 
 		it("should use Google by default when no provider is specified", async () => {
@@ -97,12 +93,12 @@ describe("Address Validation API Endpoints", () => {
 				address: "1600 Amphitheatre Parkway, Mountain View, CA",
 			});
 
-			const responseBody: ServiceResponse<AddressValidationResponse> = response.body;
+			const responseBody: AddressValidationResponse = response.body;
 
 			// Assert
 			expect(response.statusCode).toEqual(StatusCodes.OK);
 			expect(googleService.validateAddress).toHaveBeenCalled();
-			expect(responseBody.responseObject?.provider).toBe("google");
+			expect(responseBody.provider).toBe("google");
 		});
 
 		it("should return CORRECTED status when address is corrected", async () => {
@@ -120,12 +116,12 @@ describe("Address Validation API Endpoints", () => {
 				provider: "google",
 			});
 
-			const responseBody: ServiceResponse<AddressValidationResponse> = response.body;
+			const responseBody: AddressValidationResponse = response.body;
 
 			// Assert
 			expect(response.statusCode).toEqual(StatusCodes.OK);
-			expect(responseBody.responseObject?.status).toBe("CORRECTED");
-			expect(responseBody.responseObject?.corrections).toContain("Address components were corrected or replaced");
+			expect(responseBody.status).toBe("CORRECTED");
+			expect(responseBody.corrections).toContain("Address components were corrected or replaced");
 		});
 
 		it("should return UNVERIFIABLE status for invalid addresses", async () => {
@@ -144,11 +140,11 @@ describe("Address Validation API Endpoints", () => {
 				provider: "google",
 			});
 
-			const responseBody: ServiceResponse<AddressValidationResponse> = response.body;
+			const responseBody: AddressValidationResponse = response.body;
 
 			// Assert
 			expect(response.statusCode).toEqual(StatusCodes.OK);
-			expect(responseBody.responseObject?.status).toBe("UNVERIFIABLE");
+			expect(responseBody.status).toBe("UNVERIFIABLE");
 		});
 
 		it("should return bad request when address is missing", async () => {
@@ -157,12 +153,11 @@ describe("Address Validation API Endpoints", () => {
 				provider: "google",
 			});
 
-			const responseBody: ServiceResponse = response.body;
+			const responseBody: ErrorResponse = response.body;
 
 			// Assert
 			expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
-			expect(responseBody.success).toBeFalsy();
-			expect(responseBody.message).toContain("Invalid input");
+			expect(responseBody.error).toContain("Invalid input");
 		});
 
 		it("should return bad request when address is empty", async () => {
@@ -172,12 +167,11 @@ describe("Address Validation API Endpoints", () => {
 				provider: "google",
 			});
 
-			const responseBody: ServiceResponse = response.body;
+			const responseBody: ErrorResponse = response.body;
 
 			// Assert
 			expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
-			expect(responseBody.success).toBeFalsy();
-			expect(responseBody.message).toContain("Invalid input");
+			expect(responseBody.error).toContain("Invalid input");
 		});
 
 		it("should return bad request for invalid provider", async () => {
@@ -187,12 +181,11 @@ describe("Address Validation API Endpoints", () => {
 				provider: "invalid_provider",
 			});
 
-			const responseBody: ServiceResponse = response.body;
+			const responseBody: ErrorResponse = response.body;
 
 			// Assert
 			expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
-			expect(responseBody.success).toBeFalsy();
-			expect(responseBody.message).toContain("Invalid input");
+			expect(responseBody.error).toContain("Invalid input");
 		});
 
 		it("should handle service errors gracefully", async () => {
@@ -205,12 +198,11 @@ describe("Address Validation API Endpoints", () => {
 				address: "123 Main St",
 			});
 
-			const responseBody: ServiceResponse = response.body;
+			const responseBody: ErrorResponse = response.body;
 
 			// Assert
 			expect(response.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
-			expect(responseBody.success).toBeFalsy();
-			expect(responseBody.message).toContain("An error occurred while validating the address");
+			expect(responseBody.error).toContain("Unable to validate address");
 		});
 	});
 });

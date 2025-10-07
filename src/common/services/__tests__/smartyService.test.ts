@@ -64,7 +64,7 @@ describe("SmartyService", () => {
 
 			expect(result.status).toBe("VALID");
 			expect(result.standardized.number).toBe("1600");
-			expect(result.standardized.street).toBe("1600 Amphitheatre Pkwy");
+			expect(result.standardized.street).toBe("Amphitheatre Pkwy");
 			expect(result.standardized.city).toBe("Mountain View");
 			expect(result.standardized.state).toBe("CA");
 			expect(result.standardized.zip).toBe("94043-1351");
@@ -233,7 +233,7 @@ describe("SmartyService", () => {
 
 			const result = await smartyService.validateAddress("100 N Main St E");
 
-			expect(result.standardized.street).toBe("100 N Main St E");
+			expect(result.standardized.street).toBe("N Main St E");
 		});
 	});
 });

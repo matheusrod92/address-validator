@@ -59,6 +59,10 @@ export class GoogleService {
 	}
 
 	async validateAddress(address: string): Promise<GoogleServiceResult> {
+		if (this.apiKey.startsWith("test-")) {
+			throw new Error("Google API key not configured properly. Please set GOOGLE_API_KEY environment variable.");
+		}
+
 		try {
 			const response = await fetch(`${this.apiUrl}?key=${this.apiKey}`, {
 				method: "POST",
@@ -67,6 +71,7 @@ export class GoogleService {
 				},
 				body: JSON.stringify({
 					address: {
+						regionCode: "US",
 						addressLines: [address],
 					},
 				}),
@@ -90,6 +95,11 @@ export class GoogleService {
 		const corrections: string[] = [];
 		const warnings: string[] = [];
 		let status: ValidationStatus = "VALID";
+
+		if (address.postalAddress.regionCode && address.postalAddress.regionCode !== "US") {
+			status = "UNVERIFIABLE";
+			warnings.push(`Non-US address detected (${address.postalAddress.regionCode}). Only US addresses are supported.`);
+		}
 
 		if (!verdict.addressComplete) {
 			status = "UNVERIFIABLE";
@@ -133,13 +143,13 @@ export class GoogleService {
 	private extractStandardizedAddress(address: GoogleAddress): StandardizedAddress {
 		const components = address.addressComponents;
 		const postalAddress = address.postalAddress;
+
 		const streetNumber = components.find((c) => c.componentType === "street_number")?.componentName.text;
 		const route = components.find((c) => c.componentType === "route")?.componentName.text;
-		const street = [streetNumber, route].filter(Boolean).join(" ") || undefined;
 
 		return {
 			number: streetNumber,
-			street,
+			street: route,
 			city: postalAddress.locality || undefined,
 			state: postalAddress.administrativeArea || undefined,
 			zip: postalAddress.postalCode || undefined,
