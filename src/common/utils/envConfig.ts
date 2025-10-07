@@ -15,6 +15,12 @@ const envSchema = z.object({
 	COMMON_RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().positive().default(1000),
 
 	COMMON_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(1000),
+
+	GOOGLE_API_KEY: z.string().min(1).default("test-google-key"),
+
+	SMARTY_AUTH_ID: z.string().min(1).default("test-smarty-id"),
+
+	SMARTY_AUTH_TOKEN: z.string().min(1).default("test-smarty-token"),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);
