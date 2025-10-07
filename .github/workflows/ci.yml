@@ -40,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
       - uses: ./.github/actions/setup-pnpm
-      - run: pnpm test
+      - run: NODE_ENV=test pnpm test
 
   docker:
     name: Docker Build and Push
