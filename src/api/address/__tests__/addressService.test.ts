@@ -1,4 +1,3 @@
-import { StatusCodes } from "http-status-codes";
 import type { Mock } from "vitest";
 
 import { AddressService } from "@/api/address/addressService";

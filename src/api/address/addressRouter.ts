@@ -1,6 +1,6 @@
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
-import { StatusCodes } from "http-status-codes";
 import express, { type Router } from "express";
+import { StatusCodes } from "http-status-codes";
 
 import { addressController } from "@/api/address/addressController";
 import {

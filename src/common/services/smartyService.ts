@@ -72,7 +72,7 @@ export class SmartyService {
 	}
 
 	async validateAddress(address: string): Promise<SmartyServiceResult> {
-		if (this.authId.startsWith("test-") || this.authToken.startsWith("test-")) {
+		if (process.env.NODE_ENV !== "test" && (this.authId.startsWith("test-") || this.authToken.startsWith("test-"))) {
 			throw new Error(
 				"Smarty API credentials not configured properly. Please set SMARTY_AUTH_ID and SMARTY_AUTH_TOKEN environment variables.",
 			);

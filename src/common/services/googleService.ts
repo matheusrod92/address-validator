@@ -19,6 +19,7 @@ interface GoogleVerdict {
 	hasUnconfirmedComponents: boolean;
 	hasInferredComponents: boolean;
 	hasReplacedComponents: boolean;
+	hasSpellCorrectedComponents: boolean;
 }
 
 interface GoogleAddress {
@@ -59,7 +60,7 @@ export class GoogleService {
 	}
 
 	async validateAddress(address: string): Promise<GoogleServiceResult> {
-		if (this.apiKey.startsWith("test-")) {
+		if (process.env.NODE_ENV !== "test" && this.apiKey.startsWith("test-")) {
 			throw new Error("Google API key not configured properly. Please set GOOGLE_API_KEY environment variable.");
 		}
 
@@ -106,7 +107,7 @@ export class GoogleService {
 			warnings.push("Address is incomplete");
 		}
 
-		if (verdict.hasReplacedComponents) {
+		if (verdict.hasReplacedComponents || verdict.hasSpellCorrectedComponents || verdict.hasInferredComponents) {
 			status = "CORRECTED";
 			corrections.push("Address components were corrected or replaced");
 		}

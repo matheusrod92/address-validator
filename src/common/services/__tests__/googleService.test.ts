@@ -23,6 +23,7 @@ describe("GoogleService", () => {
 				hasUnconfirmedComponents: false,
 				hasInferredComponents: false,
 				hasReplacedComponents: false,
+				hasSpellCorrectedComponents: false,
 			},
 			address: {
 				formattedAddress: "1600 Amphitheatre Parkway, Mountain View, CA 94043, USA",
