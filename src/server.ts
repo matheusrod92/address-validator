@@ -2,6 +2,7 @@ import cors from "cors";
 import express, { type Express } from "express";
 import helmet from "helmet";
 import { pino } from "pino";
+import { addressRouter } from "@/api/address/addressRouter";
 import { healthCheckRouter } from "@/api/healthCheck/healthCheckRouter";
 import { openAPIRouter } from "@/api-docs/openAPIRouter";
 import errorHandler from "@/common/middleware/errorHandler";
@@ -27,6 +28,7 @@ app.use(requestLogger);
 
 // Routes
 app.use("/health-check", healthCheckRouter);
+app.use("/validate-address", addressRouter);
 
 // Swagger UI
 app.use(openAPIRouter);
