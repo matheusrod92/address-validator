@@ -21,14 +21,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 app.use(helmet());
-app.use(rateLimiter);
 
 // Request logging
 app.use(requestLogger);
 
 // Routes
 app.use("/health-check", healthCheckRouter);
-app.use("/validate-address", addressRouter);
+app.use("/validate-address", rateLimiter, addressRouter);
 
 // Swagger UI
 app.use(openAPIRouter);
