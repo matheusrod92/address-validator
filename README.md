@@ -1,119 +1,138 @@
-# 🚀 Express TypeScript Boilerplate 2025
+# Address Validation API - README
 
-[![CI](https://github.com/edwinhern/express-typescript/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/edwinhern/express-typescript-2024/actions/workflows/ci.yml)
+## 1. Install & Run
 
-```code
-Hey There! 🙌
-🤾 that ⭐️ button if you like this boilerplate.
+```bash
+# Install PNPM if you don't have it
+npm install -g pnpm@latest-10
+
+# Install dependencies
+pnpm install
+
+# Configure environment variables
+cp .env.template .env
+# Edit .env and add your API keys:
+# GOOGLE_API_KEY=your_google_key
+# SMARTY_AUTH_ID=your_smarty_id
+# SMARTY_AUTH_TOKEN=your_smarty_token
+
+# Run development server
+pnpm start:dev
+
+# Run tests
+pnpm test
+
+# Build for production
+pnpm build
 ```
 
-## 🌟 Introduction
+The API will be available at `http://localhost:8080`
 
-Welcome to Express TypeScript Boilerplate 2025 – a simple and ready-to-use starting point for building backend web services with Express.js and TypeScript.
+**Swagger documentation** is automatically available at `http://localhost:8080` when the server runs.
 
-## 💡 Why We Made This
+## 2. Project Structure
 
-This starter kit helps you:
-
-- ✨ Start new projects faster
-- 📊 Write clean, consistent code
-- ⚡ Build things quickly
-- 🛡️ Follow best practices for security and testing
-
-## 🚀 What's Included
-
-- 📁 Well-organized folders: Files grouped by feature so you can find things easily
-- 💨 Fast development: Quick code running with `tsx` and error checking with `tsc`
-- 🌐 Latest Node.js: Uses the newest stable Node.js version from `.tool-versions`
-- 🔧 Safe settings: Environment settings checked with Zod to prevent errors
-- 🔗 Short import paths: Clean code with easy imports using path shortcuts
-- 🔄 Auto-updates: Keeps dependencies up-to-date with Renovate
-- 🔒 Better security: Built-in protection with Helmet and CORS settings
-- 📊 Easy tracking: Built-in logging with `pino-http`
-- 🧪 Ready-to-test: Testing tools with Vitest and Supertest already set up
-- ✅ Clean code: Consistent coding style with `Biomejs`
-- 📃 Standard responses: Unified API responses using `ServiceResponse`
-- 🐳 Easy deployment: Ready for Docker containers
-- 📝 Input checking: Request validation using Zod
-- 🧩 API browser: Interactive API docs with Swagger UI
-
-## 🛠️ Getting Started
-
-### Video Demo
-
-For a visual guide, watch the [video demo](https://github.com/user-attachments/assets/b1698dac-d582-45a0-8d61-31131732b74e) to see the setup and running of the project.
-
-### Step-by-Step Guide
-
-#### Step 1: 🚀 Initial Setup
-
-- Clone the repository: `git clone https://github.com/edwinhern/express-typescript.git`
-- Navigate: `cd express-typescript`
-- Install dependencies: `pnpm install`
-
-#### Step 2: ⚙️ Environment Configuration
-
-- Create `.env`: Copy `.env.template` to `.env`
-- Update `.env`: Fill in necessary environment variables
-
-#### Step 3: 🏃‍♂️ Running the Project
-
-- Development Mode: `pnpm start:dev`
-- Building: `pnpm build`
-- Production Mode: Set `NODE_ENV="production"` in `.env` then `pnpm build && pnpm start:prod`
-
-## 🤝 Feedback and Contributions
-
-We'd love to hear your feedback and suggestions for further improvements. Feel free to contribute and join us in making backend development cleaner and faster!
-
-🎉 Happy coding!
-
-## 📁 Folder Structure
-
-```code
-├── biome.json
-├── Dockerfile
-├── LICENSE
-├── package.json
-├── pnpm-lock.yaml
-├── README.md
-├── src
-│   ├── api
-│   │   ├── healthCheck
-│   │   │   ├── __tests__
-│   │   │   │   └── healthCheckRouter.test.ts
-│   │   │   └── healthCheckRouter.ts
-│   │   └── user
-│   │       ├── __tests__
-│   │       │   ├── userRouter.test.ts
-│   │       │   └── userService.test.ts
-│   │       ├── userController.ts
-│   │       ├── userModel.ts
-│   │       ├── userRepository.ts
-│   │       ├── userRouter.ts
-│   │       └── userService.ts
-│   ├── api-docs
-│   │   ├── __tests__
-│   │   │   └── openAPIRouter.test.ts
-│   │   ├── openAPIDocumentGenerator.ts
-│   │   ├── openAPIResponseBuilders.ts
-│   │   └── openAPIRouter.ts
-│   ├── common
-│   │   ├── __tests__
-│   │   │   ├── errorHandler.test.ts
-│   │   │   └── requestLogger.test.ts
-│   │   ├── middleware
-│   │   │   ├── errorHandler.ts
-│   │   │   ├── rateLimiter.ts
-│   │   │   └── requestLogger.ts
-│   │   ├── models
-│   │   │   └── serviceResponse.ts
-│   │   └── utils
-│   │       ├── commonValidation.ts
-│   │       ├── envConfig.ts
-│   │       └── httpHandlers.ts
-│   ├── index.ts
-│   └── server.ts
-├── tsconfig.json
-└── vite.config.mts
 ```
+src/api/address/
+├── addressController.ts  # HTTP request/response handlers
+├── addressRouter.ts      # Route definitions + OpenAPI specs
+├── addressService.ts     # Core business logic & provider fallback
+└── addressModel.ts       # Zod validation schemas & TypeScript types
+
+src/common/services/
+├── googleService.ts      # Google Address Validation API adapter
+└── smartyService.ts      # Smarty US Street Address API adapter
+```
+
+**Key endpoint:** `POST /validate-address`
+
+**Request:**
+```json
+{
+  "address": "1600 Amphitheatre Pkwy, Mtn View CA",
+  "provider": "google"
+}
+```
+*`provider` is optional: `"google"` | `"smarty"`* (this will force usage of the provider)
+
+**Response:**
+```json
+{
+  "input": "1600 Amphitheatre Pkwy, Mtn View CA",
+  "standardized": {
+    "number": "1600",
+    "street": "Amphitheatre Parkway",
+    "city": "Mountain View",
+    "state": "CA",
+    "zip": "94043"
+  },
+  "status": "CORRECTED",
+  "corrections": ["Address components were corrected or replaced"],
+  "warnings": [],
+  "provider": "google"
+}
+```
+
+**Status values:**
+- `VALID` - Address is syntactically correct and complete
+- `CORRECTED` - Address required fixes (typos, abbreviations, missing components)
+- `UNVERIFIABLE` - Address is incomplete, inconsistent, or non-US
+
+## 3. Design Decisions & Trade-offs
+
+### Syntactic vs. Postal Validation
+**Decision:** Implemented syntactic validation only (not USPS deliverability checks).
+
+**Rationale:** For fintech/insurance use cases, we need addresses that are structurally valid and normalized, not necessarily postal-deliverable. This supports use cases like lease agreements where addresses must be coherent but might represent new developments or non-standard locations.
+
+### Dual Provider Strategy
+**Decision:** Google as primary, Smarty as fallback.
+
+**Trade-offs:**
+- **Google strengths:** Advanced heuristics, typo correction, confidence levels per component
+- **Smarty strengths:** Fast, US-focused, reliable normalization
+- **Cost:** More integration complexity, dual API key management
+- **Benefit:** Redundancy and complementary capabilities
+
+If Google returns `UNVERIFIABLE`, the system automatically tries Smarty before giving up.
+
+### US-Only Constraint
+**Decision:** Reject non-US addresses explicitly.
+
+**Rationale:** Aligns with TheGuarantors' business domain (US rental/insurance market). Google's API supports international addresses, so we added explicit validation to ensure `regionCode === "US"`.
+
+### Response Format
+**Decision:** Removed the boilerplate's `ServiceResponse` wrapper pattern for direct JSON responses.
+
+**Rationale:** Simpler API contract. Instead of:
+```json
+{ "success": true, "responseObject": { /* actual data */ } }
+```
+We return the data directly, with standard HTTP status codes and error objects.
+
+### Boilerplate Usage
+**Decision:** Used [edwinhern/express-typescript](https://github.com/edwinhern/express-typescript) as the foundation.
+
+**Trade-offs:**
+- **Gain:** Fast setup with TypeScript, Zod, OpenAPI docs, testing, linting, Docker pre-configured and Rate Limiter
+- **Cost:** Predefined structure and tooling choices (e.g., Vitest, Pino logger, specific middleware patterns)
+- **Mitigation:** Removed or adapted parts that didn't fit (e.g., ServiceResponse wrapper)
+
+## 4. AI Usage
+
+### ChatGPT
+- **Purpose:** Solution design discussion and API research
+- **Tasks:**
+  - Explored Google Address Validation API vs Smarty Streets capabilities
+  - Discussed trade-offs between syntactic vs postal validation
+  - Researched how to interpret Google's `verdict` and `confirmationLevel` fields
+  - Identified best practices for address normalization in fintech contexts
+
+### Claude Code
+- **Purpose:** Implementation and test generation
+- **Tasks:**
+  - Wrote comprehensive test suites for all services (45+ test cases)
+  - Fixed edge cases discovered during testing (street number duplication, US-only validation, partial data handling)
+  - Refactored response format when removing ServiceResponse wrapper
+
+**Workflow:** ChatGPT for architectural decisions → Claude Code for tests and polishing.
